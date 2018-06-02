@@ -11,10 +11,12 @@
   },
   "dependencies": {
     "ajv": "^6.4.0",
+    "axios": "^0.18.0",
     "bootstrap-vue": "^2.0.0-rc.2",
     "circular-json": "^0.5.4",
-    "jquery": "^1.9.1",
+    "jquery": "^3.3.1",
     "vue": "^2.5.2",
+    "vue-axios": "^2.1.1",
     "vue-cookie": "^1.1.4",
     "vue-resource": "^1.5.1",
     "vue-router": "^3.0.1",

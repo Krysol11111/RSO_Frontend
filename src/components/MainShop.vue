@@ -22,7 +22,7 @@
   import CategoryMenu from '@/components/CategoryMenu.vue'
   import ProductList from '@/components/ProductList.vue'
   import data from './../../db.js'
-  import {mapGetters, mapMutations} from 'vuex'
+  import {mapGetters, mapMutations, mapActions} from 'vuex'
 
   var categories = [];
   categories = data.categories.map(data => {data.active = false; return data});
@@ -41,11 +41,17 @@
       ...mapMutations({
         setProductCategory: 'setProductCategory',
       }),
+      ...mapActions([
+        'initCategories',
+      ]),
     },
     computed: {
       ...mapGetters({
         displayedProducts: 'displayedProducts',
       }),
+    },
+    created(){
+    	this.initCategories();
     },
     data () {
       return {

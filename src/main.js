@@ -6,18 +6,22 @@ import App from './App'
 import router from './router'
 import store from './state'
 import Vuelidate from 'vuelidate'
-import VueResource from 'vue-resource';
+//import VueResource from 'vue-resource';
+import axios from 'axios'
+import VueAxios from 'vue-axios'
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 var VueCookie = require('vue-cookie');
 
 Vue.config.productionTip = false;
-Vue.use(VueResource);
+//Vue.use(VueResource);
 Vue.use(BootstrapVue);
 Vue.use(VueCookie);
 Vue.use(Vuelidate);
-Vue.http.options.credentials = true;
+Vue.use(VueAxios, axios);
+
+//Vue.http.options.credentials = true;
 
 /* eslint-disable no-new */
 new Vue({
