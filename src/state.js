@@ -31,6 +31,7 @@ const getters = {
   loggedUser: state => state.loggedUser,
   selectedCategory: state => state.selectedCategory,
   displayedProducts: state => state.displayedProducts,
+  categories: state => state.categories,
 };
 
 //asynchroniczne
@@ -39,38 +40,38 @@ const actions = {
   /*initGame: ({commit}) => {
     return commit('mutationname', parameters)
   }*/
-  initCategories: async () => {
-    /*let payload = {
-      grant_type: "password",
-      client_id: "rso-client",
-      client_secret: "3d3ec54d-29fc-4f40-b265-36bcb200b794",
-      username: "ws-admin",
-      password: "ws-admin",
-    };
-    console.log(await Vue.axios.post(
-      "http://192.168.8.108:8080/auth/realms/rso/protocol/openid-connect/token",
-      payload,
-      {
-        emulateJSON: true,
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        }
-      }
-    ));*/
+  initCategories: async (context) => {
     let categoriesEndpoint = links.services.products + links.productsQuery.categories;
     var categoriesConfig = {
-      headers: {
-        Authorization: 'Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJBaWViaDJBRHg5NE41bERyQ21XaGRQLVVldGhaTUdJaE9JWUd5NHQ3aGlVIn0.eyJqdGkiOiIxZDEwNzVmMC0yNmIzLTRlZTMtYjgzNy1mODZmNWRkY2UwYWQiLCJleHAiOjE1Mjc5NTYyMzMsIm5iZiI6MCwiaWF0IjoxNTI3OTM4MjMzLCJpc3MiOiJodHRwOi8vMTkyLjE2OC44LjEwODo4MDgwL2F1dGgvcmVhbG1zL3JzbyIsImF1ZCI6InJzby1jbGllbnQiLCJzdWIiOiI5MDRjNjI2ZC00YjZiLTQ2OTQtODdlYS04ZTI1Y2U4MmRjMmUiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJyc28tY2xpZW50IiwiYXV0aF90aW1lIjowLCJzZXNzaW9uX3N0YXRlIjoiNGM4NjAyNjUtODQzMS00MzlkLTg3N2MtODg0M2JlNzM0ODEwIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6W10sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJhZG1pbiIsInVzZXIiXX0sInJlc291cmNlX2FjY2VzcyI6eyJyZWFsbS1tYW5hZ2VtZW50Ijp7InJvbGVzIjpbInZpZXctaWRlbnRpdHktcHJvdmlkZXJzIiwidmlldy1yZWFsbSIsIm1hbmFnZS1pZGVudGl0eS1wcm92aWRlcnMiLCJpbXBlcnNvbmF0aW9uIiwicmVhbG0tYWRtaW4iLCJjcmVhdGUtY2xpZW50IiwibWFuYWdlLXVzZXJzIiwicXVlcnktcmVhbG1zIiwidmlldy1hdXRob3JpemF0aW9uIiwicXVlcnktY2xpZW50cyIsInF1ZXJ5LXVzZXJzIiwibWFuYWdlLWV2ZW50cyIsIm1hbmFnZS1yZWFsbSIsInZpZXctZXZlbnRzIiwidmlldy11c2VycyIsInZpZXctY2xpZW50cyIsIm1hbmFnZS1hdXRob3JpemF0aW9uIiwibWFuYWdlLWNsaWVudHMiLCJxdWVyeS1ncm91cHMiXX0sImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInByZWZlcnJlZF91c2VybmFtZSI6IndzLWFkbWluIn0.IWs1sak7WgvtLSpRrAXxblGYfe6vbOiP7l-LXeJmgdKXnwPqU0CXNsdJ20kfH6l7CVXgKCSCAk-L8MMeqg92itnbYKYuxdLcC4FejUAeI7qfP1YoX3lzTymK-ST2jVtDjeGM4PhU1D2lrYeT0HnERKvYp9OMoVcMWlzJl7H9jCax1c647TiZn305XZUZswTRpzU9TvMo4RZ-gzs5McXnOt2RPxLRUJJ9msZmeMvru0xkctxGUqc1d9RERzcJHdaqnKqxyp2p2oh_y60P3sKBVI366Cchv4eUfbx3QVt2k-_obCr0orbb4cpwY8V80A2xoS-9AX5eFvz3GYb5zbFcSw',
-      }
+      /*headers: {
+        Authorization: 'Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJBaWViaDJBRHg5NE41bERyQ21XaGRQLVVldGhaTUdJaE9JWUd5NHQ3aGlVIn0.eyJqdGkiOiI4ZDFmZDdkMi05NDQxLTQ1NzEtYjViNS0yOGUxNWU3NjU4NGMiLCJleHAiOjE1Mjc5NjUxMjgsIm5iZiI6MCwiaWF0IjoxNTI3OTQ3MTI4LCJpc3MiOiJodHRwOi8vMTkyLjE2OC44LjEwODo4MDgwL2F1dGgvcmVhbG1zL3JzbyIsImF1ZCI6InJzby1jbGllbnQiLCJzdWIiOiI5MDRjNjI2ZC00YjZiLTQ2OTQtODdlYS04ZTI1Y2U4MmRjMmUiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJyc28tY2xpZW50IiwiYXV0aF90aW1lIjowLCJzZXNzaW9uX3N0YXRlIjoiZWM4MjVhZDktNjNjMi00YzlkLTlkM2EtZTg1YzNlNGZlMGVhIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6W10sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJhZG1pbiIsInVzZXIiXX0sInJlc291cmNlX2FjY2VzcyI6eyJyZWFsbS1tYW5hZ2VtZW50Ijp7InJvbGVzIjpbInZpZXctaWRlbnRpdHktcHJvdmlkZXJzIiwidmlldy1yZWFsbSIsIm1hbmFnZS1pZGVudGl0eS1wcm92aWRlcnMiLCJpbXBlcnNvbmF0aW9uIiwicmVhbG0tYWRtaW4iLCJjcmVhdGUtY2xpZW50IiwibWFuYWdlLXVzZXJzIiwicXVlcnktcmVhbG1zIiwidmlldy1hdXRob3JpemF0aW9uIiwicXVlcnktY2xpZW50cyIsInF1ZXJ5LXVzZXJzIiwibWFuYWdlLWV2ZW50cyIsIm1hbmFnZS1yZWFsbSIsInZpZXctZXZlbnRzIiwidmlldy11c2VycyIsInZpZXctY2xpZW50cyIsIm1hbmFnZS1hdXRob3JpemF0aW9uIiwibWFuYWdlLWNsaWVudHMiLCJxdWVyeS1ncm91cHMiXX0sImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInByZWZlcnJlZF91c2VybmFtZSI6IndzLWFkbWluIn0.B_GjHh9yx1N7TBN5-k9kagLBSat7Kbr8u32I72eDmND2LWKJUsN15lST9YKyezZKazTawUKJ6DBehvwP5nu4-DfFBKozLBNyffsnpoUzJgwBdCIhk9JC0WpQSmQmi677ChxFWNrMdVWd0Kv8sHrx_WjyS4Zb9XcYZQK71RmNA5lxLAzMoxTYRpPfd6rq6J8y_eiB4ZtWXfgOnN1OyIrZZIbuouE8N0UXHtaZ8I0EWd306KyTwzNNzFl4ShCvTLYn2kphpYSir5OhkMB1SFz7oGL3BaIaESO-Y_bNOMES_atOEsA1e3M60MkkJhobbUAgYJLC96YIVqgTWiQA8PGtIQ',
+      }*/
     };
-    console.log(categoriesConfig);
-    console.log({headers: {
-      Authorization: "Bearer " + "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJBaWViaDJBRHg5NE41bERyQ21XaGRQLVVldGhaTUdJaE9JWUd5NHQ3aGlVIn0.eyJqdGkiOiIxZDEwNzVmMC0yNmIzLTRlZTMtYjgzNy1mODZmNWRkY2UwYWQiLCJleHAiOjE1Mjc5NTYyMzMsIm5iZiI6MCwiaWF0IjoxNTI3OTM4MjMzLCJpc3MiOiJodHRwOi8vMTkyLjE2OC44LjEwODo4MDgwL2F1dGgvcmVhbG1zL3JzbyIsImF1ZCI6InJzby1jbGllbnQiLCJzdWIiOiI5MDRjNjI2ZC00YjZiLTQ2OTQtODdlYS04ZTI1Y2U4MmRjMmUiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJyc28tY2xpZW50IiwiYXV0aF90aW1lIjowLCJzZXNzaW9uX3N0YXRlIjoiNGM4NjAyNjUtODQzMS00MzlkLTg3N2MtODg0M2JlNzM0ODEwIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6W10sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJhZG1pbiIsInVzZXIiXX0sInJlc291cmNlX2FjY2VzcyI6eyJyZWFsbS1tYW5hZ2VtZW50Ijp7InJvbGVzIjpbInZpZXctaWRlbnRpdHktcHJvdmlkZXJzIiwidmlldy1yZWFsbSIsIm1hbmFnZS1pZGVudGl0eS1wcm92aWRlcnMiLCJpbXBlcnNvbmF0aW9uIiwicmVhbG0tYWRtaW4iLCJjcmVhdGUtY2xpZW50IiwibWFuYWdlLXVzZXJzIiwicXVlcnktcmVhbG1zIiwidmlldy1hdXRob3JpemF0aW9uIiwicXVlcnktY2xpZW50cyIsInF1ZXJ5LXVzZXJzIiwibWFuYWdlLWV2ZW50cyIsIm1hbmFnZS1yZWFsbSIsInZpZXctZXZlbnRzIiwidmlldy11c2VycyIsInZpZXctY2xpZW50cyIsIm1hbmFnZS1hdXRob3JpemF0aW9uIiwibWFuYWdlLWNsaWVudHMiLCJxdWVyeS1ncm91cHMiXX0sImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInByZWZlcnJlZF91c2VybmFtZSI6IndzLWFkbWluIn0.IWs1sak7WgvtLSpRrAXxblGYfe6vbOiP7l-LXeJmgdKXnwPqU0CXNsdJ20kfH6l7CVXgKCSCAk-L8MMeqg92itnbYKYuxdLcC4FejUAeI7qfP1YoX3lzTymK-ST2jVtDjeGM4PhU1D2lrYeT0HnERKvYp9OMoVcMWlzJl7H9jCax1c647TiZn305XZUZswTRpzU9TvMo4RZ-gzs5McXnOt2RPxLRUJJ9msZmeMvru0xkctxGUqc1d9RERzcJHdaqnKqxyp2p2oh_y60P3sKBVI366Cchv4eUfbx3QVt2k-_obCr0orbb4cpwY8V80A2xoS-9AX5eFvz3GYb5zbFcSw"
-      }});
-    let categoriesResponse = await Vue.axios.get(categoriesEndpoint,categoriesConfig);
-    //console.log(categoriesResponse);
-
+    try {
+      let categoriesResponse = await Vue.axios.get(categoriesEndpoint, categoriesConfig);
+      console.log(categoriesResponse);
+      context.commit('setCategories',categoriesResponse.data);
+    }
+    catch(e){
+      console.log(e);
+    }
   },
+  selectCategory: async (context,id) =>
+  {
+    let productsEndpoint = links.services.products + links.productsQuery.products+ "?filter=(categoryId=(eq:"+ id +"))";
+    try {
+      let categoriesResponse = await Vue.axios.get(productsEndpoint);
+      console.log(categoriesResponse.data.result);
+      let payload = {
+        categoryId: id,
+        products: categoriesResponse.data.result,
+      };
+      context.commit('setProductCategory', payload);
+    }
+    catch (e) {
+      console.log(e);
+    }
+  }
 };
 
 //synchroniczne
@@ -94,11 +95,16 @@ const mutations = {
   setLoggedUser: (state, username) => {
     state.loggedUser = username;
   },
-  setProductCategory: (state, id) => {
-    state.selectedCategory = id;
+  setProductCategory: (state, payload) => {
+    state.selectedCategory = payload.categoryId;
     //call to get products
-    state.displayedProducts = data.products(id);
+    state.displayedProducts = payload.products;
   },
+  setCategories: (state,cats) => {
+    state.categories = cats;
+    state.selectedCategory = null;
+    state.displayedProducts = [];
+  }
 };
 
 export default new Vuex.Store({

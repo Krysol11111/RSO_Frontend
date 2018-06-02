@@ -36,18 +36,20 @@
     },
     methods: {
       changeActiveCategory: function (categoryId) {
-        this.setProductCategory(categoryId)
+      	if(this.selectedCategory !== categoryId) this.selectCategory(categoryId);
       },
       ...mapMutations({
-        setProductCategory: 'setProductCategory',
       }),
       ...mapActions([
         'initCategories',
+        'selectCategory',
       ]),
     },
     computed: {
       ...mapGetters({
         displayedProducts: 'displayedProducts',
+        categories: 'categories',
+        selectedCategory: 'selectedCategory',
       }),
     },
     created(){
@@ -55,7 +57,6 @@
     },
     data () {
       return {
-        categories: categories,
       }
     }
   }
