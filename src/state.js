@@ -72,8 +72,9 @@ const actions = {
       console.log(e);
     }
   },
-  logoutUser: async ({commit,state}) => {
-    commit('setLoggedUser',null);
+  logoutUser: async ({commit,dispatch,state}) => {
+    token = state.token;
+    dispatch('forgetLoggedUser');
     // await call to revoke token
     if (state.token !== null){
       try {
@@ -90,8 +91,8 @@ const actions = {
         console.log(e);
       }
     }
-    commit('setToken',null);
     console.log("Logging Out")
+    alert("Wylogowano!");
   },
   loginUser: async ({commit}, creds) => {
     try {
@@ -109,9 +110,12 @@ const actions = {
       commit('setToken',loginResponse.data);
       // set username from token
       commit('setLoggedUser',loginData.username);
+      alert("Zalogowano");
     }
     catch(e){
       console.log(e);
+      dispatch('forgetLoggedUser');
+      alert("Błąd logowania!");
     }
   },
   refreshToken: async ({commit,dispatch,state}) => {
@@ -128,7 +132,7 @@ const actions = {
     }
     catch(e){
       console.log(e);
-
+      dispatch('forgetLoggedUser');
     }
   },
   forgetLoggedUser:  ({commit,state}) => {
