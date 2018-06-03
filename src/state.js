@@ -14,7 +14,8 @@ const INITIAL_STATE = {
   categories: [],
   displayedProducts: [],
   productsPage: 1,
-  loggedUser: 'Krzysztof',
+  loggedUser: 'Kappa',
+  token: null,
 };
 
 const getters = {
@@ -56,21 +57,83 @@ const actions = {
       console.log(e);
     }
   },
-  selectCategory: async (context,id) =>
-  {
+  selectCategory: async (context,id) => {
     let productsEndpoint = links.services.products + links.productsQuery.products+ "?filter=(categoryId=(eq:"+ id +"))";
     try {
-      let categoriesResponse = await Vue.axios.get(productsEndpoint);
-      console.log(categoriesResponse.data.result);
+      let productsResponse = await Vue.axios.get(productsEndpoint);
+      console.log(productsResponse.data.result);
       let payload = {
         categoryId: id,
-        products: categoriesResponse.data.result,
+        products: productsResponse.data.result,
       };
       context.commit('setProductCategory', payload);
     }
     catch (e) {
       console.log(e);
     }
+  },
+  logoutUser: async ({commit,state}) => {
+    commit('setLoggedUser',null);
+    // await call to revoke token
+    if (state.token !== null){
+      try {
+        let logoutEndpoint = links.services.users + links.usersQuery.logout;
+        let logoutConfig = {
+          headers: {
+            Authorization: 'Bearer ' + state.token.token,
+            "content-type": "application/json",
+            }
+        };
+        console.log(logoutConfig);
+        await Vue.axios.post(logoutEndpoint, {kappa: "kappa"},logoutConfig);
+      }catch (e){
+        console.log(e);
+      }
+    }
+    commit('setToken',null);
+    console.log("Logging Out")
+  },
+  loginUser: async ({commit}, creds) => {
+    try {
+      console.log(creds);
+      let loginEndpoint = links.services.users + links.usersQuery.login;
+
+      let loginData = {
+        username: creds.username,
+        password: creds.password,
+      };
+      // await call for token
+      let loginResponse = await Vue.axios.post(loginEndpoint, loginData);
+      console.log(loginResponse);
+      // set token from response
+      commit('setToken',loginResponse.data);
+      // set username from token
+      commit('setLoggedUser',loginData.username);
+    }
+    catch(e){
+      console.log(e);
+    }
+  },
+  refreshToken: async ({commit,dispatch,state}) => {
+    try {
+      let refreshEndpoint = links.services.users + links.usersQuery.refreshToken;
+      let refreshData = {
+        refreshToken: state.token.refreshToken,
+      };
+      // await call for refreshedtoken
+      let refreshResponse = await Vue.axios.post(refreshEndpoint, refreshData);
+      console.log(refreshResponse);
+      // set token from response
+      commit('setToken',refreshResponse.data);
+    }
+    catch(e){
+      console.log(e);
+
+    }
+  },
+  forgetLoggedUser:  ({commit,state}) => {
+    commit('setToken',null);
+    commit('setLoggedUser',null);
   }
 };
 
@@ -104,6 +167,9 @@ const mutations = {
     state.categories = cats;
     state.selectedCategory = null;
     state.displayedProducts = [];
+  },
+  setToken: (state,token) => {
+    state.token = token;
   }
 };
 

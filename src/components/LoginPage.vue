@@ -115,7 +115,7 @@
   //import Spinner from '@/components/common/Spinner'
   import {loginUser, registerUser} from '@/userAuth.js'
   import { required, minLength, sameAs, email } from "vuelidate/lib/validators"
-  import {mapGetters, mapMutations} from 'vuex'
+  import {mapGetters, mapMutations, mapActions} from 'vuex'
 
 
   export default {
@@ -177,23 +177,17 @@
       },
     },
     methods: {
-      ...mapMutations({
-        setLoggedUser: 'setLoggedUser',
-      }),
+      ...mapActions([
+      	'loginUser'
+      ]),
       async submitLogin () {
         this.communicating = true;
         const credentials = {
-          username: this.loginCredentials.username,
-          password: this.loginCredentials.password
+          username: this.loginForm.name,
+          password: this.loginForm.password
         };
-        // Auth.login() returns a promise. A redirect will happen on success.
-        // For errors, use .then() to capture the response to output
-        // error_description (if exists) as shown below:
-        let response = await loginUser(credentials);
-        // set username in state
-        this.setLoggedUser('Krzysztof')
-
-        console.log(response);
+        await this.loginUser(credentials);
+        this.communicating = false;
       },
 
       async submitRegister () {

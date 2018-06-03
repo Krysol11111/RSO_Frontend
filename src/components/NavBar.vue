@@ -41,7 +41,7 @@
   import {logoutUser} from '@/userAuth.js'
   import CategoryItem from '@/components/CategoryItem'
   import DropdownCartItem from '@/components/DropdownCartItem'
-  import {mapGetters, mapMutations} from 'vuex'
+  import {mapGetters, mapMutations, mapActions} from 'vuex'
 
   var categories = data.categories.map(data => {data.active = false; return data})
 
@@ -66,10 +66,13 @@
         deleteFromCart: 'deleteFromCart',
         setLoggedUser: 'setLoggedUser',
       }),
+      ...mapActions([
+      	'logoutUser'
+      ]),
       logout: function(){
-        logoutUser();
-        this.setLoggedUser(null);
-      }
+        this.logoutUser();
+        this.$router.push('/Login');
+      },
     },
     data () {
       return {
