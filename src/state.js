@@ -73,7 +73,7 @@ const actions = {
     }
   },
   logoutUser: async ({commit,dispatch,state}) => {
-    token = state.token;
+    let token = state.token;
     dispatch('forgetLoggedUser');
     // await call to revoke token
     if (state.token !== null){
@@ -92,7 +92,7 @@ const actions = {
       }
     }
     console.log("Logging Out")
-    alert("Wylogowano!");
+    window.alert("Wylogowano!");
   },
   loginUser: async ({commit}, creds) => {
     try {
