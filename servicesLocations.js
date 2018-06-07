@@ -1,12 +1,12 @@
 export default {
   services: {
-    orders: "192.168.8.108:8084/webservice-rest",
+    orders: "http://localhost:8084/webservice-rest",
     products: "http://localhost:8082/product-webservice-rest",
-    keycloak: "http://192.168.8.108:8080/auth/realms/rso/protocol/openid-connect/token",
     users: "http://localhost:8083/user-webservice-rest",
   },
   ordersQuery:{
-
+    createOrder: "/api/orders/addOrder",
+    fetchOrders: "/api/orders/orders",
   },
   productsQuery:{
     products: "/api/products",
@@ -16,6 +16,7 @@ export default {
     login: "/api/token/getToken",
     logout: "/api/token/logout",
     refreshToken: "/api/token/refreshToken",
+    register: "/api/register",
   },
 }
 

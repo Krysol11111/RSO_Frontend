@@ -7,7 +7,7 @@
         {{product.quantity}}
       </b-col>
       <b-col class="price-col">
-        {{product.price * product.quantity}}zł
+        {{Math.round(product.price * product.quantity * 100)/100}}zł
       </b-col>
       <b-col>
         <b-button v-on:click="deleteFromCartClick">Usuń</b-button>

@@ -7,8 +7,8 @@
           <b-form-group id="loginNameGroup">
             <b-form-input id="loginName"
                           type="text"
-                          v-model="loginForm.name"
-                          :state="!$v.loginForm.name.$invalid"
+                          v-model="loginForm.username"
+                          :state="!$v.loginForm.username.$invalid"
                           aria-describedby="nameLoginFeedback"
                           placeholder="Wprowadź login" />
             <b-form-invalid-feedback id="nameLoginFeedback">
@@ -41,11 +41,33 @@
           <b-form-group id="registerNameGroup">
             <b-form-input id="registerName"
                           type="text"
-                          v-model="registerForm.name"
-                          :state="!$v.registerForm.name.$invalid"
+                          v-model="registerForm.username"
+                          :state="!$v.registerForm.username.$invalid"
                           aria-describedby="nameRegisterFeedback"
                           placeholder="Wprowadź login" />
             <b-form-invalid-feedback id="nameRegisterFeedback">
+              To pole jest wymagane
+            </b-form-invalid-feedback>
+          </b-form-group>
+          <b-form-group id="registerFirstNameGroup">
+            <b-form-input id="registerFirstName"
+                          type="text"
+                          v-model="registerForm.firstName"
+                          :state="!$v.registerForm.firstName.$invalid"
+                          aria-describedby="firstNameRegisterFeedback"
+                          placeholder="Wprowadź imię" />
+            <b-form-invalid-feedback id="firstNameRegisterFeedback">
+              To pole jest wymagane
+            </b-form-invalid-feedback>
+          </b-form-group>
+          <b-form-group id="registerLastNameGroup">
+            <b-form-input id="registerLastName"
+                          type="text"
+                          v-model="registerForm.lastName"
+                          :state="!$v.registerForm.lastName.$invalid"
+                          aria-describedby="lastNameRegisterFeedback"
+                          placeholder="Wprowadź nazwisko" />
+            <b-form-invalid-feedback id="lastNameRegisterFeedback">
               To pole jest wymagane
             </b-form-invalid-feedback>
           </b-form-group>
@@ -145,7 +167,7 @@
     },
     validations: {
       loginForm: {
-        name: {
+        username: {
           required,
         },
         password: {
@@ -153,7 +175,13 @@
         },
       },
       registerForm: {
-      	name: {
+        username: {
+          required,
+        },
+        firstName: {
+          required,
+        },
+        lastName: {
           required,
         },
         password: {
@@ -178,29 +206,27 @@
     },
     methods: {
       ...mapActions([
-      	'loginUser'
+      	'loginUser',
+        'registerUser',
       ]),
       async submitLogin () {
-        this.communicating = true;
         const credentials = {
-          username: this.loginForm.name,
+          username: this.loginForm.username,
           password: this.loginForm.password
         };
         await this.loginUser(credentials);
-        this.communicating = false;
+        this.$router.push('/');
       },
 
       async submitRegister () {
-        this.communicating = true;
         const credentials = {
-          username: this.loginCredentials.username,
-          password: this.loginCredentials.password
+          username: this.registerForm.username,
+          firstName: this.registerForm.firstName,
+          lastName: this.registerForm.lastName,
+          email: this.registerForm.email,
+          password: this.registerForm.password,
         };
-        // Auth.login() returns a promise. A redirect will happen on success.
-        // For errors, use .then() to capture the response to output
-        // error_description (if exists) as shown below:
-        let response = await registerUser(credentials);
-        console.log(response);
+        await this.registerUser(credentials);
       }
     }
   }

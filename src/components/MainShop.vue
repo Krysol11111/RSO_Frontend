@@ -1,10 +1,5 @@
 <template>
   <div class="shop">
-    <!--//TODO
-      //leftside menu
-      //topside menu
-      //cart
-      //item cells-->
     <b-container fluid class="">
       <b-row>
         <b-col>
@@ -12,6 +7,11 @@
         </b-col>
         <b-col cols="10">
           <ProductList v-bind:products="displayedProducts"/>
+          <div class="page-menu">
+            <b-button class="minsize" :disabled="!prevPageExists ? '' : disabled">Wstecz</b-button>
+            <div class="page-number">Aktualna strona: {{currentProductPage}}</div>
+            <b-button class="minsize" :disabled="!nextPageExists ? '' : disabled">Dalej</b-button>
+          </div>
         </b-col>
       </b-row>
     </b-container>
@@ -50,9 +50,12 @@
         displayedProducts: 'displayedProducts',
         categories: 'categories',
         selectedCategory: 'selectedCategory',
+        currentProductPage: 'currentProductPage',
+        prevPageExists: 'prevPageExists',
+        nextPageExists: 'nextPageExists',
       }),
     },
-    created(){
+    mounted(){
     	this.initCategories();
     },
     data () {
@@ -68,6 +71,17 @@
   b-container, b-row, b-col {
     margin: 0px;
   }
-
+  .page-menu{
+    display:flex;
+    align: center;
+    justify-content: center;
+  }
+  .page-number {
+    margin-left: 30px;
+    margin-right: 30px;
+  }
+  .minsize{
+    min-width:100px
+  }
 
 </style>

@@ -16,6 +16,7 @@
         <b-navbar-nav class="ml-auto">
           <b-nav-item href="#" v-if="loggedUser === null"><router-link to="/Login">Login</router-link></b-nav-item>
           <b-nav-text v-if="loggedUser !== null"><div class="reset-color">Witaj <b>{{loggedUser}}</b></div></b-nav-text>
+          <b-nav-item href="#" v-if="loggedUser !== null"><router-link to="/OrderHistory">Zamówienia</router-link></b-nav-item>
           <b-nav-item v-if="loggedUser !== null"><b-link v-on:click="logout()">Logout</b-link></b-nav-item>
           <b-nav-item-dropdown right>
             <!-- Using button-content slot -->

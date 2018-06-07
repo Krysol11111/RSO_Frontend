@@ -3,19 +3,38 @@
     <!--<img src="./assets/logo.png">-->
     <NavBar />
     <router-view/>
+    <loading
+      :show="communicating">
+    </loading>
   </div>
 </template>
 
 <script>
   import NavBar from '@/components/NavBar.vue'
   import {mapGetters, mapMutations} from 'vuex'
+  import loading from 'vue-full-loading'
 
   export default {
-  name: 'App',
-  components: {
-    NavBar,
-  },
-}
+    name: 'App',
+    components: {
+      NavBar,
+      loading,
+    },
+    computed:{
+      ...mapGetters([
+      	'communicating',
+      ])
+    },
+    methods:{
+      ...mapMutations([
+      	'unlock_com'
+      ])
+    },
+    mounted(){
+    	this.unlock_com();
+    },
+
+  }
 </script>
 
 <style>

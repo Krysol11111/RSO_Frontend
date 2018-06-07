@@ -1,4 +1,4 @@
-import Vue from 'vue'
+  import Vue from 'vue'
 import Vuex from 'vuex'
 import createPersistedState from 'vuex-persistedstate'
 import createMutationsSharer from 'vuex-shared-mutations'
@@ -13,10 +13,14 @@ const INITIAL_STATE = {
   selectedCategory: null,
   categories: [],
   displayedProducts: [],
+  currentProductPage: 1,
+  productsPerPage: 5,
   productsPage: 1,
-  loggedUser: 'Kappa',
+  loggedUser: null,
   token: null,
+  communicating: false,
 };
+
 
 const getters = {
   cart: state => state.cart,
@@ -31,17 +35,32 @@ const getters = {
     .reduce((a, b) => a + b, 0),
   loggedUser: state => state.loggedUser,
   selectedCategory: state => state.selectedCategory,
-  displayedProducts: state => state.displayedProducts,
+  displayedProducts: state => state.displayedProducts.map((e) => {
+    var product = JSON.parse(JSON.stringify(e));
+    product.maxQuantity = product.quantity;
+    let cartProduct = state.cart.find(e => e.id === product.id);
+    if (cartProduct !== undefined)
+      product.quantity = product.quantity - cartProduct.quantity;
+    return product;
+  }),
+  currentProductPage: state => state.currentProductPage,
+  prevPageExists: state => state.currentProductPage > 1,
+  nextPageExists: state => state.displayedProducts.length == state.productsPerPage,
   categories: state => state.categories,
+  communicating: state => state.communicating,
+
 };
 
 //asynchroniczne
 const actions = {
-  //zapytanie do api
-  /*initGame: ({commit}) => {
-    return commit('mutationname', parameters)
-  }*/
-  initCategories: async (context) => {
+  initCategories: async ({commit, state}) => {
+    //show loading wheel while communicating. Not meant as mutex - possible race states are handled by services.
+    //loading wheel is supposed to show the client that communication is underway.
+    if (state.communicating === true) {
+      return;
+    }else{
+      commit('lock_com');
+    }
     let categoriesEndpoint = links.services.products + links.productsQuery.categories;
     var categoriesConfig = {
       /*headers: {
@@ -51,30 +70,69 @@ const actions = {
     try {
       let categoriesResponse = await Vue.axios.get(categoriesEndpoint, categoriesConfig);
       console.log(categoriesResponse);
-      context.commit('setCategories',categoriesResponse.data);
+      commit('setCategories',categoriesResponse.data);
     }
     catch(e){
       console.log(e);
     }
+    commit('unlock_com');
   },
-  selectCategory: async (context,id) => {
-    let productsEndpoint = links.services.products + links.productsQuery.products+ "?filter=(categoryId=(eq:"+ id +"))";
+  selectCategory: async ({commit,state},id) => {
+    if (state.communicating === true) {
+      return;
+    }else{
+      commit('lock_com');
+    }
+    let productsEndpoint = links.services.products + links.productsQuery.products+ "?filter=(categoryId=(eq:"+ id +"))&page=(0,"+ state.productsPerPage + ")";
     try {
       let productsResponse = await Vue.axios.get(productsEndpoint);
       console.log(productsResponse.data.result);
       let payload = {
         categoryId: id,
         products: productsResponse.data.result,
+        page: 1,
       };
-      context.commit('setProductCategory', payload);
+      commit('setDisplayedProducts', payload);
     }
     catch (e) {
       console.log(e);
     }
+    commit('unlock_com');
+  },
+  changePage: async ({commit,state},count) => {
+    if (count === 0) return;
+    if (state.communicating === true) {
+      return;
+    }else{
+      commit('lock_com');
+    }
+    var lesser,greater;
+
+      lesser = (state.currentProductPage+count-1) * state.productsPerPage;
+      greater = (state.currentProductPage+count) * state.productsPerPage;
+    if (count < 0) [lesser,greater] = [greater,lesser];
+    let productsEndpoint = links.services.products + links.productsQuery.products+ "?filter=(categoryId=(eq:"+ state.selectedCategory +"))&page=("+lesser+","+ greater + ")";
+    try {
+      let productsResponse = await Vue.axios.get(productsEndpoint);
+      console.log(productsResponse.data.result);
+      let payload = {
+        products: productsResponse.data.result,
+        page: state.currentProductPage+count,
+      };
+      commit('setDisplayedProducts', payload);
+    }
+    catch (e) {
+      console.log(e);
+    }
+    commit('unlock_com');
   },
   logoutUser: async ({commit,dispatch,state}) => {
+    if (state.communicating === true) {
+      return;
+    }else{
+      commit('lock_com');
+    }
     let token = state.token;
-    dispatch('forgetLoggedUser');
     // await call to revoke token
     if (state.token !== null){
       try {
@@ -86,15 +144,23 @@ const actions = {
             }
         };
         console.log(logoutConfig);
-        await Vue.axios.post(logoutEndpoint, {kappa: "kappa"},logoutConfig);
+        await Vue.axios.post(logoutEndpoint, {},logoutConfig);
       }catch (e){
         console.log(e);
       }
     }
-    console.log("Logging Out")
+    await dispatch('forgetLoggedUser');
+    console.log("Logging Out");
     window.alert("Wylogowano!");
+    commit('unlock_com');
+
   },
-  loginUser: async ({commit}, creds) => {
+  loginUser: async ({commit, dispatch, state}, creds) => {
+    if (state.communicating === true) {
+      return;
+    }else{
+      commit('lock_com');
+    }
     try {
       console.log(creds);
       let loginEndpoint = links.services.users + links.usersQuery.login;
@@ -114,9 +180,39 @@ const actions = {
     }
     catch(e){
       console.log(e);
-      dispatch('forgetLoggedUser');
+      await dispatch('forgetLoggedUser');
       alert("Błąd logowania!");
     }
+    commit('unlock_com');
+  },
+  registerUser: async ({commit,state}, creds) => {
+    if (state.communicating === true) {
+      return;
+    }else{
+      commit('lock_com');
+    }
+    try {
+      console.log(creds);
+      let registerEndpoint = links.services.users + links.usersQuery.register;
+      let registerData = {
+        user: {
+          username: creds.username,
+          firstName: creds.firstName,
+          lastName: creds.lastName,
+          email: creds.email,
+        },
+        password: creds.password,
+      };
+      // await call for token
+      let registerResponse = await Vue.axios.post(registerEndpoint, registerData);
+      console.log(registerResponse);
+      alert("Zarejestrowano!");
+    }
+    catch(e){
+      console.log(e);
+      alert("Błąd rejestracji!");
+    }
+    commit('unlock_com');
   },
   refreshToken: async ({commit,dispatch,state}) => {
     try {
@@ -132,13 +228,105 @@ const actions = {
     }
     catch(e){
       console.log(e);
-      dispatch('forgetLoggedUser');
+      await dispatch('forgetLoggedUser');
+      alert("Błąd odświerzania tokena");
     }
   },
   forgetLoggedUser:  ({commit,state}) => {
     commit('setToken',null);
     commit('setLoggedUser',null);
-  }
+  },
+  makeOrder: async ({commit,state,dispatch}) => {
+    if (state.communicating === true) {
+      return;
+    }else{
+      commit('lock_com');
+    }
+    //check login and send cart to backend
+    if (state.cartCount < 1 ){
+      alert("Koszyk jest pusty!");
+      return;
+    }
+    if (state.loggedUser !== null && state.token !== null){
+      // send cart to backend and if successful -> dumpCart from state
+      try{
+        let makeOrderEndpoint = links.services.orders + links.ordersQuery.createOrder;
+        let orderData = {
+          productsList: state.cart.map((item) => {
+            return {
+              productId: item.id,
+              price: item.price,
+              quantity: item.quantity,
+            }
+          })
+        };
+        let orderConfig = {
+          headers: {
+            Authorization: 'Bearer ' + state.token.token,
+          }
+        };
+        console.log(orderData.productList);
+        var response = await Vue.axios.post(makeOrderEndpoint,orderData,orderConfig);
+        if (response.status === 200) {
+          commit('dumpCart');
+          alert("Zamówienie dodano pomyślnie");
+        }
+        else{
+          alert("Błąd w dodawaniu zamówienia - brakujące lub nieprawidłowe dane bądź niewystarczający zapas w magazynie do realizacji zamówienia");
+        }
+        await dispatch('refreshToken');
+      }catch(e){
+        await dispatch('forgetLoggedUser');
+        alert("Błąd autoryzacji - zaloguj się i spróbuj ponownie");
+      }
+    }
+    else{
+      await dispatch('forgetLoggedUser');
+      alert("Do utworzenia zamówienia potrzeba najpierw się zalogować!!!");
+    }
+    commit('unlock_com');
+  },
+  fetchOrderHistory: async ({commit,state,dispatch}) => {
+    if (state.communicating === true) {
+      return;
+    }else{
+      commit('lock_com');
+    }
+    var success = false;
+    var orders = [];
+    if (state.loggedUser !== null && state.token !== null){
+      try{
+        let fetchOrderHistoryEndpoint = links.services.orders + links.ordersQuery.fetchOrders;
+        let orderConfig = {
+          headers: {
+            Authorization: 'Bearer ' + state.token.token,
+          }
+        };
+        var response = await Vue.axios.get(fetchOrderHistoryEndpoint,orderConfig);
+        if (response.status === 200) {
+          success = true;
+          console.log(response.data);
+          orders = response.data;
+        }
+        else{
+          alert("Błąd pobierania zamówień");
+        }
+        await dispatch('refreshToken');
+      }catch(e){
+        await dispatch('forgetLoggedUser');
+        alert("Błąd autoryzacji - zaloguj się i spróbuj ponownie");
+      }
+    }
+    else{
+      await dispatch('forgetLoggedUser');
+      alert("Tylko zalogowani użytkownicy mogą oglądać swoje zamówienia");
+    }
+    commit('unlock_com');
+    return {
+      success: success,
+      orders: orders,
+    };
+  },
 };
 
 //synchroniczne
@@ -162,10 +350,12 @@ const mutations = {
   setLoggedUser: (state, username) => {
     state.loggedUser = username;
   },
-  setProductCategory: (state, payload) => {
-    state.selectedCategory = payload.categoryId;
-    //call to get products
+  setDisplayedProducts: (state, payload) => {
+    if (payload.categoryId !== undefined) {
+      state.selectedCategory = payload.categoryId;
+    }
     state.displayedProducts = payload.products;
+    state.currentPage = payload.page;
   },
   setCategories: (state,cats) => {
     state.categories = cats;
@@ -174,6 +364,12 @@ const mutations = {
   },
   setToken: (state,token) => {
     state.token = token;
+  },
+  lock_com: (state) => {
+    state.communicating = true;
+  },
+  unlock_com: (state) => {
+    state.communicating = false;
   }
 };
 
@@ -184,6 +380,6 @@ export default new Vuex.Store({
   state: INITIAL_STATE,
   plugins: [
     createPersistedState(),
-    createMutationsSharer({ predicate: ['dumpCart', 'addToCart','deleteFromCart','setLoggedUser'] }),
+    createMutationsSharer({ predicate: ['dumpCart', 'addToCart','deleteFromCart','setLoggedUser','setToken'] }),
   ]
 });

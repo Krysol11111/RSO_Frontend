@@ -13,7 +13,10 @@
             </div>
             <form>
               Cena za sztukę: {{product.price}} zł
-              <input v-model.number="quantity" type="number" class="form-control" id="inputQuantity" placeholder="1" min="1" v-bind:max="product.quantity">
+              <div>
+                <input v-model.number="quantity" type="number" class="form-control" id="inputQuantity" placeholder="0" min="0" v-bind:max="product.quantity">
+                Max. {{product.quantity}}
+              </div>
               <div class="form-group row">
                 <div class="col-sm-10">
                   <button type="addToCart" class="btn btn-primary" v-on:click="addToCartOnClick">Dodaj do Koszyka</button>
@@ -42,6 +45,13 @@
     },
     methods: {
       addToCartOnClick: function() {
+      	if (this.quantity <=  0){
+      		this.quantity = 0;
+      		return;
+        }
+        if (this.quantity > this.product.quantity){
+      		this.quantity = this.product.quantity;
+        }
         var addedProduct = JSON.parse(JSON.stringify(this.product));
         addedProduct.quantity = this.quantity;
         this.addToCart(addedProduct);
@@ -72,5 +82,12 @@
   }
   p, h4{
     text-align: left;
+  }
+  img{
+    display: block;
+    max-width: 200px;
+    max-height: 200px;
+    width: auto;
+    height: auto;
   }
 </style>

@@ -48,7 +48,7 @@
 </template>
 
 <script>
-  import {mapGetters, mapMutations} from 'vuex'
+  import {mapGetters, mapMutations, mapActions} from 'vuex'
   import { required, minLength, sameAs, email } from "vuelidate/lib/validators"
 
   export default {
@@ -73,22 +73,15 @@
         addToCart: 'addToCart',
         deleteFromCart: 'deleteFromCart',
       }),
+      ...mapActions([
+      	'makeOrder'
+      ]),
       async orderCart(){
-        //check login and send cart to backend
-        if (this.cartProducts.length < 1 ){
-        	alert("Koszyk jest pusty!");
-        	return;
+      	if (this.cartCount === 0){
+      		alert("Nie można utworzyć zamówienia z pustego koszyka");
+      		return;
         }
-        if (this.loggedUser !== null){
-        	// send cart to backend and if successful -> dumpCart from state
-          console.log('Zamówienie Wysłane')
-            //.then(() => this.dumpCart());
-          this.dumpCart();
-          // in case of error with sending cart -> do not dumm cart and inform user + if it is login problem - logout
-        }
-        else{
-        	alert("Do utworzenia zamówienia potrzeba najpierw się zalogować!!!");
-        }
+        this.makeOrder();
       }
     },
     validations: {
